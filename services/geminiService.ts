@@ -5,7 +5,6 @@ export const generateWallpaper = async (
   prompt: string,
   aspectRatio: "1:1" | "3:4" | "4:3" | "9:16" | "16:9" = "16:9"
 ): Promise<string> => {
-  // Inisialisasi API
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
     throw new Error("Kunci API tidak ditemukan.");
@@ -39,9 +38,6 @@ export const generateWallpaper = async (
     throw new Error("Model tidak mengembalikan data gambar.");
   } catch (error: any) {
     console.error("Gemini Error Details:", error);
-    if (error?.message?.includes('API_KEY_INVALID')) {
-      throw new Error("API Key tidak valid.");
-    }
     throw error;
   }
 };

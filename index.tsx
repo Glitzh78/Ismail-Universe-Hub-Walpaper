@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
 
 const container = document.getElementById('root');
 
@@ -13,9 +13,9 @@ if (container) {
         <App />
       </React.StrictMode>
     );
-    console.log("Aplikasi Bulan Dan Langit Dimulai...");
+    console.log("React app mounted successfully");
   } catch (error) {
     console.error("Mounting error:", error);
-    container.innerHTML = `<div style="color: white; padding: 20px; text-align: center;">Error: ${error}</div>`;
+    container.innerHTML = `<div style="color: white; padding: 20px; text-align: center;">Gagal memuat aplikasi. Silakan muat ulang.</div>`;
   }
 }

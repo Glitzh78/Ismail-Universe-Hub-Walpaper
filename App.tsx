@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Monitor, 
   Smartphone, 
@@ -22,13 +22,17 @@ import {
   Trophy,
   Rocket
 } from 'lucide-react';
-import { DEVICES, CHARACTERS, ART_STYLES } from './constants.ts';
-import { DeviceType, Character, GeneratedWallpaper, CharacterCategory } from './types.ts';
-import { generateWallpaper } from './services/geminiService.ts';
+import { DEVICES, CHARACTERS, ART_STYLES } from './constants';
+import { DeviceType, Character, GeneratedWallpaper, CharacterCategory } from './types';
+import { generateWallpaper } from './services/geminiService';
 
 const CATEGORIES: CharacterCategory[] = ['Heroes', 'Groups & Academy', 'Masters & Military', 'Villains', 'Monsters', 'Allies & Support'];
 
 const App: React.FC = () => {
+  useEffect(() => {
+    console.log("App component rendered");
+  }, []);
+
   const initialCharacter = CHARACTERS && CHARACTERS.length > 0 ? CHARACTERS[0] : null;
   const initialStyle = ART_STYLES && ART_STYLES.length > 0 ? ART_STYLES[0] : null;
 
@@ -50,7 +54,7 @@ const App: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!selectedCharacter || !selectedStyle) {
-      setError('Pilih karakter & gaya dulu, Coeg!');
+      setError('Pilih karakter & gaya dulu!');
       return;
     }
 
