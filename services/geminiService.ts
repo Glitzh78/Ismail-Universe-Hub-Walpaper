@@ -1,16 +1,18 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// Fix: Initialize GoogleGenAI with a configuration object containing the API key as per SDK guidelines.
-const getAIClient = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
-};
-
 export const generateWallpaper = async (
   prompt: string,
   aspectRatio: "1:1" | "3:4" | "4:3" | "9:16" | "16:9" = "16:9"
 ): Promise<string> => {
-  const ai = getAIClient();
+  // Always initialize with the current process.env.API_KEY to ensure we have the latest injected key.
+  const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
+  
+  if (!apiKey) {
+    throw new Error("API Key is missing. Please check your environment variables.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
@@ -25,7 +27,6 @@ export const generateWallpaper = async (
       },
     });
 
-    // Fix: Safely iterate through parts to find the inlineData (image) part.
     const candidates = response.candidates;
     if (candidates && candidates.length > 0 && candidates[0].content && candidates[0].content.parts) {
       for (const part of candidates[0].content.parts) {

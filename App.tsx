@@ -22,15 +22,15 @@ import {
   Trophy,
   Rocket
 } from 'lucide-react';
-import { DEVICES, CHARACTERS, ART_STYLES } from './constants';
-import { DeviceType, Character, GeneratedWallpaper, CharacterCategory } from './types';
-import { generateWallpaper } from './services/geminiService';
+import { DEVICES, CHARACTERS, ART_STYLES } from './constants.ts';
+import { DeviceType, Character, GeneratedWallpaper, CharacterCategory } from './types.ts';
+import { generateWallpaper } from './services/geminiService.ts';
 
 const CATEGORIES: CharacterCategory[] = ['Heroes', 'Groups & Academy', 'Masters & Military', 'Villains', 'Monsters', 'Allies & Support'];
 
 const App: React.FC = () => {
   const [selectedDevice, setSelectedDevice] = useState<DeviceType>('desktop');
-  const [selectedCharacter, setSelectedCharacter] = useState<Character>(CHARACTERS[0]);
+  const [selectedCharacter, setSelectedCharacter] = useState<Character>(CHARACTERS[0] || {} as Character);
   const [selectedStyle, setSelectedStyle] = useState(ART_STYLES[0]);
   const [customDescription, setCustomDescription] = useState('');
   const [activeCategory, setActiveCategory] = useState<CharacterCategory | 'All'>('All');
@@ -45,6 +45,11 @@ const App: React.FC = () => {
   }, [activeCategory]);
 
   const handleGenerate = async () => {
+    if (!selectedCharacter || !selectedCharacter.basePrompt) {
+      setError('Silakan pilih karakter terlebih dahulu.');
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
     
@@ -66,7 +71,8 @@ const App: React.FC = () => {
       setCurrentWallpaper(newWallpaper);
       setHistory(prev => [newWallpaper, ...prev.slice(0, 9)]);
     } catch (err) {
-      setError('Gagal membuat wallpaper. Silakan coba lagi nanti.');
+      console.error("Generation error:", err);
+      setError('Gagal membuat wallpaper. Pastikan API Key valid dan coba lagi.');
     } finally {
       setIsGenerating(false);
     }
@@ -76,7 +82,7 @@ const App: React.FC = () => {
     if (!currentWallpaper) return;
     const link = document.createElement('a');
     link.href = currentWallpaper.url;
-    link.download = `BulanDanLangit_${selectedCharacter.name.replace(/\s+/g, '_')}_${selectedDevice}.png`;
+    link.download = `BulanDanLangit_${selectedCharacter?.name?.replace(/\s+/g, '_') || 'wallpaper'}_${selectedDevice}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -93,6 +99,15 @@ const App: React.FC = () => {
       default: return 'text-slate-400 bg-slate-400/10';
     }
   };
+
+  // Guard clause for early return if characters are missing
+  if (!CHARACTERS || CHARACTERS.length === 0) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <p>Memuat data lore...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
@@ -115,7 +130,7 @@ const App: React.FC = () => {
              </div>
              <div className="flex items-center gap-1.5 text-[9px] text-slate-500 uppercase font-bold border border-slate-800 px-2 py-1 rounded-md">
                 <Info className="w-3 h-3" />
-                Original Lore Only
+                Original Lore Studio
              </div>
           </div>
         </div>
@@ -157,8 +172,7 @@ const App: React.FC = () => {
               2. Pilih Legenda Lore
             </h2>
             
-            {/* Category Filter */}
-            <div className="flex gap-2 overflow-x-auto pb-4 mb-4 custom-scrollbar no-scrollbar">
+            <div className="flex gap-2 overflow-x-auto pb-4 mb-4 no-scrollbar">
               <button
                 onClick={() => setActiveCategory('All')}
                 className={`px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all border ${
@@ -203,7 +217,7 @@ const App: React.FC = () => {
                       {char.group}
                     </div>
                   )}
-                  <div className="text-[11px] text-slate-400 leading-tight mb-2 italic">
+                  <div className="text-[11px] text-slate-400 leading-tight mb-2 italic line-clamp-2">
                     {char.description}
                   </div>
                   <div className="text-[10px] font-mono text-blue-400 uppercase tracking-tighter bg-blue-500/5 inline-block px-2 py-0.5 rounded">
@@ -214,7 +228,6 @@ const App: React.FC = () => {
             </div>
           </section>
 
-          {/* Custom Description Input */}
           <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold flex items-center gap-2">
@@ -233,7 +246,7 @@ const App: React.FC = () => {
             <textarea
               value={customDescription}
               onChange={(e) => setCustomDescription(e.target.value)}
-              placeholder="Contoh: Sedang melakukan jurus pamungkas, langit mendung merah, memegang kapak maut..."
+              placeholder="Contoh: Menyerang dengan aura naga air, latar belakang istana kristal..."
               className="w-full bg-slate-800/50 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-h-[100px] resize-none placeholder:text-slate-600"
             />
           </section>
@@ -268,7 +281,7 @@ const App: React.FC = () => {
             {isGenerating ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Membangkitkan Lore...
+                Membentuk Wallpaper...
               </>
             ) : (
               <>
@@ -293,7 +306,7 @@ const App: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-bold text-white mb-1">Membentuk Dimensi {selectedCharacter.name}</h3>
                   <p className="text-slate-400 text-sm max-w-xs mx-auto italic leading-relaxed">
-                    AI sedang melukis pahlawan berdasarkan dokumen asli...
+                    Sedang melukis sang legenda berdasarkan lore asli...
                   </p>
                 </div>
               </div>
@@ -323,16 +336,22 @@ const App: React.FC = () => {
                 <div className="w-20 h-20 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
                   <ImageIcon className="w-10 h-10 text-slate-600" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">Katalog Legenda Bulan Dan Langit</h3>
+                <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">Katalog Bulan Dan Langit</h3>
                 <p className="text-slate-400 max-w-sm mx-auto leading-relaxed">
                   Pilih karakter atau grup resmi untuk menciptakan wallpaper epik untuk HP, Tablet, atau Desktop.
                 </p>
               </div>
             )}
+
+            {error && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg z-50">
+                {error}
+              </div>
+            )}
           </div>
 
           {/* Lore Notes Panel */}
-          {selectedCharacter.note && (
+          {selectedCharacter && selectedCharacter.note && (
             <section className="bg-slate-900 border border-blue-500/20 rounded-2xl p-6 shadow-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-3 opacity-10">
                 <BookOpen className="w-12 h-12 text-blue-400" />
@@ -355,7 +374,7 @@ const App: React.FC = () => {
                 </div>
                 <h3 className="font-bold text-sm mb-2">Power Academy (SD)</h3>
                 <p className="text-[11px] text-slate-400 leading-relaxed italic">
-                  Institusi pahlawan anak SD dengan teknologi Nano-Sync tercanggih.
+                  Institusi pahlawan anak SD (Tim 969) dengan teknologi Nano-Sync tercanggih.
                 </p>
              </div>
              <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl hover:bg-slate-900 transition-all group">
@@ -364,7 +383,7 @@ const App: React.FC = () => {
                 </div>
                 <h3 className="font-bold text-sm mb-2">Fighting Academy</h3>
                 <p className="text-[11px] text-slate-400 leading-relaxed italic">
-                  Dojo Master Zaidaun, menjaga rahasia teknik DuanStep kuno.
+                  Dojo Master Zaidaun, menjaga rahasia teknik DuanStep dan TamStep kuno.
                 </p>
              </div>
              <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl hover:bg-slate-900 transition-all group">
@@ -373,7 +392,7 @@ const App: React.FC = () => {
                 </div>
                 <h3 className="font-bold text-sm mb-2">Ahonok Military</h3>
                 <p className="text-[11px] text-slate-400 leading-relaxed italic">
-                  Armada Galactic pimpinan Jenderal Lalun, pelindung bumi.
+                  Armada Galactic pimpinan Jenderal Lalun, pelindung bumi dari ancaman luar.
                 </p>
              </div>
              <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl hover:bg-slate-900 transition-all group">
@@ -393,7 +412,7 @@ const App: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold flex items-center gap-2">
                   <History className="w-5 h-5 text-slate-400" />
-                  Galeri Terbaru
+                  Galeri Wallpaper Terbaru
                 </h2>
                 <span className="text-xs text-slate-500 font-bold">{history.length} Item</span>
               </div>
@@ -444,6 +463,37 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+          height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #1e293b;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #334155;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
