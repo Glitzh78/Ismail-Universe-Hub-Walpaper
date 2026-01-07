@@ -22,9 +22,9 @@ import {
   Trophy,
   Rocket
 } from 'lucide-react';
-import { DEVICES, CHARACTERS, ART_STYLES } from './constants';
-import { DeviceType, Character, GeneratedWallpaper, CharacterCategory } from './types';
-import { generateWallpaper } from './services/geminiService';
+import { DEVICES, CHARACTERS, ART_STYLES } from './constants.ts';
+import { DeviceType, Character, GeneratedWallpaper, CharacterCategory } from './types.ts';
+import { generateWallpaper } from './services/geminiService.ts';
 
 const CATEGORIES: CharacterCategory[] = ['Heroes', 'Groups & Academy', 'Masters & Military', 'Villains', 'Monsters', 'Allies & Support'];
 
@@ -252,6 +252,18 @@ const App: React.FC = () => {
           &copy; 2024 Arvio & Ghazi &bull; Bulan Dan Langit Project
         </p>
       </footer>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoom-in { from { transform: scale(0.97); } to { transform: scale(1); } }
+        .animate-in { animation: fade-in 0.8s ease-out, zoom-in 0.8s ease-out; }
+      `}</style>
     </div>
   );
 };
