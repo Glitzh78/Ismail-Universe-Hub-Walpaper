@@ -5,11 +5,10 @@ export const generateWallpaper = async (
   prompt: string,
   aspectRatio: "1:1" | "3:4" | "4:3" | "9:16" | "16:9" = "16:9"
 ): Promise<string> => {
-  // Always initialize with the current process.env.API_KEY to ensure we have the latest injected key.
-  const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
-  
+  // Inisialisasi API
+  const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    throw new Error("API Key is missing. Please check your environment variables.");
+    throw new Error("Kunci API tidak ditemukan.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -28,17 +27,21 @@ export const generateWallpaper = async (
     });
 
     const candidates = response.candidates;
-    if (candidates && candidates.length > 0 && candidates[0].content && candidates[0].content.parts) {
-      for (const part of candidates[0].content.parts) {
-        if (part.inlineData) {
-          return `data:image/png;base64,${part.inlineData.data}`;
-        }
+    if (candidates && candidates.length > 0) {
+      const parts = candidates[0].content?.parts;
+      const imagePart = parts?.find(p => p.inlineData);
+      
+      if (imagePart?.inlineData?.data) {
+        return `data:image/png;base64,${imagePart.inlineData.data}`;
       }
     }
     
-    throw new Error("No image data found in response");
-  } catch (error) {
-    console.error("Error generating wallpaper:", error);
+    throw new Error("Model tidak mengembalikan data gambar.");
+  } catch (error: any) {
+    console.error("Gemini Error Details:", error);
+    if (error?.message?.includes('API_KEY_INVALID')) {
+      throw new Error("API Key tidak valid.");
+    }
     throw error;
   }
 };
